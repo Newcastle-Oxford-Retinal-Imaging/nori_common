@@ -17,6 +17,14 @@ def test_package_imports() -> None:
     assert nori_common.__name__ == "nori_common"
 
 
+def test_public_api_is_reexported() -> None:
+    import nori_common.fits
+
+    assert nori_common.FitsFile is nori_common.fits.FitsFile
+    for name in nori_common.__all__:
+        assert hasattr(nori_common, name), f"{name} missing from package root"
+
+
 def test_source_never_imports_nori() -> None:
     offenders = []
     for path in sorted(SOURCE_ROOT.rglob("*.py")):

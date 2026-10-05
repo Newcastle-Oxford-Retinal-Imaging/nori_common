@@ -187,12 +187,22 @@ def _tile_shape_for(data: np.ndarray) -> tuple[int, ...] | None:
 
 
 def _as_header(header: Mapping[str, Any] | None) -> fits.Header | None:
-    """Convert a plain mapping to an astropy ``Header`` (astropy requires one)."""
+    """Convert a plain mapping to an astropy ``Header``.
+
+    Astropy uppercases short keywords, which would rewrite norifmt card names
+    such as ``n_frames`` to ``N_FRAMES``.  Keys carrying lowercase letters are
+    therefore written as explicit ``HIERARCH`` cards so their exact spelling
+    survives the round trip; already-uppercase keys are written normally.
+    """
     if header is None or isinstance(header, fits.Header):
         return header
     result = fits.Header()
     for key, value in header.items():
-        result[key] = value
+        text = str(key)
+        if text.upper().startswith("HIERARCH ") or text.isupper():
+            result[text] = value
+        else:
+            result[f"HIERARCH {text}"] = value
     return result
 
 
