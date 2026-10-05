@@ -18,18 +18,20 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 from astropy.io import fits
 
 from nori_common._gzip import GZIP_KEY, gzip_level
+from nori_common.exceptions import ExtensionNotFound, FitsError
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "Compression",
     "Extension",
+    "FitsFile",
     "Precision",
     "WritePolicy",
     "write_fits",
@@ -80,6 +82,81 @@ class Extension:
     data: np.ndarray
     name: str | None = None
     header: Mapping[str, Any] | None = None
+
+
+class FitsFile:
+    """A read-only view over a FITS file.
+
+    Selection is by extension name, or by the first data-bearing HDU when no
+    name is given.  The latter handles tile-compressed files, which prepend a
+    blank primary and keep the real data in an extension.  There is no
+    positional index: callers name what they want, which fails loudly rather
+    than silently returning the wrong HDU.
+    """
+
+    def __init__(self, hdu_list: fits.HDUList) -> None:
+        self._hdu_list = hdu_list
+
+    @classmethod
+    def open(cls, path: str | Path, *, memmap: bool = False) -> FitsFile:
+        """Open ``path`` lazily; close it via :meth:`close` or a ``with`` block."""
+        return cls(fits.open(path, memmap=memmap))
+
+    def _select(self, name: str | None) -> fits.hdu.base.BaseHDU:
+        if name is not None:
+            wanted = name.upper()
+            for hdu in self._hdu_list:
+                if hdu.name.upper() == wanted and hdu.data is not None:
+                    return hdu
+            if wanted == "PRIMARY":
+                # Tile-compressed files keep the primary payload in an
+                # extension under a blank primary, so "PRIMARY" means the
+                # primary payload, not the literal blank HDU.
+                for hdu in self._hdu_list:
+                    if hdu.data is not None:
+                        return hdu
+            raise ExtensionNotFound(name)
+
+        for hdu in self._hdu_list:
+            if hdu.data is not None:
+                return hdu
+        raise FitsError(f"no data-bearing HDU in {self._hdu_list.filename()!r}")
+
+    def array(self, name: str | None = None, *, copy: bool = True) -> np.ndarray:
+        """Return the data of the named extension (or the primary payload).
+
+        The result is an independent in-memory copy unless ``copy=False``, in
+        which case it may alias the file and is only valid while open.
+        """
+        data = self._select(name).data
+        if data is None:
+            raise FitsError(f"extension {name!r} carries no data")
+        return np.array(data) if copy else data
+
+    def header(self, name: str | None = None) -> dict[str, Any]:
+        """Return an independent plain-dict copy of an extension header."""
+        return dict(self._select(name).header)
+
+    def extensions(self) -> list[str]:
+        """Return the extension names in file order."""
+        return [hdu.name for hdu in self._hdu_list]
+
+    def as_hdu(self, name: str | None = None) -> fits.hdu.base.BaseHDU:
+        """Escape hatch: return the underlying astropy HDU.
+
+        Not a stability boundary -- the return type tracks the installed
+        Astropy version.
+        """
+        return self._select(name)
+
+    def close(self) -> None:
+        self._hdu_list.close()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
 
 
 def _cast(data: np.ndarray, precision: Precision) -> np.ndarray:
