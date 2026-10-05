@@ -1,0 +1,32 @@
+[project]
+name = "nori-common"
+version = "0.1.0"
+description = "Shared FITS I/O and norifmt schema utilities for AOSLO retinal imaging"
+readme = "README.md"
+requires-python = ">=3.12.0"
+dependencies = [
+    "astropy>=7.2.0",
+    "numpy>=2.4.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.9.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers --strict-config"
+markers = [
+    "slow: long-running timing tests (deselect with -m 'not slow')",
+]
+xfail_strict = true
+filterwarnings = [
+    "error::DeprecationWarning:nori_common.*",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.27,<0.10.0"]
+build-backend = "uv_build"
