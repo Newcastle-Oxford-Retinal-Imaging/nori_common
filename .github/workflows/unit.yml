@@ -1,0 +1,52 @@
+name: Unit tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+
+      - name: Install nori-common
+        shell: bash
+        run: uv sync --dev
+
+      - name: Lint
+        shell: bash
+        run: uv run ruff check src/ tests/
+
+      - name: Check formatting
+        shell: bash
+        run: uv run ruff format --check src/ tests/
+
+      - name: Run unit tests
+        shell: bash
+        run: uv run pytest --cov=nori_common --cov-report=markdown tests/unit
+
+      - name: Display coverage report in summary
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          echo '### Coverage report' >> "$GITHUB_STEP_SUMMARY"
+          cat coverage.md >> "$GITHUB_STEP_SUMMARY"

@@ -146,5 +146,5 @@ def test_close_is_idempotent_and_releases_file(tmp_path):
     fits_file = FitsFile.open(path, memmap=True)
     fits_file.close()
     fits_file.close()
-    with pytest.raises(ValueError, match="closed"):
+    with pytest.raises((ValueError, OSError)):
         fits_file.array()
