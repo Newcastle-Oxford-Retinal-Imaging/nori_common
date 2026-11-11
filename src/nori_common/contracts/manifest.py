@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from nori_common.contracts.model_base import ContractBase
+from nori_common.contracts.pixel_scale import PixelScaleMetadata
 from nori_common.contracts.provenance import ArtifactProvenance
 
 
@@ -29,3 +30,4 @@ class Manifest(ContractBase):
     metadata: dict[str, Any] = {}
     capabilities: dict[str, bool] = {}
     provenance: ArtifactProvenance = ArtifactProvenance()
+    pixel_scale: PixelScaleMetadata | None = None
