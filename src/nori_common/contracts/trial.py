@@ -68,6 +68,7 @@ class TrialMetadata(ContractBase):
     provenance: ArtifactProvenance = ArtifactProvenance()
     frame: FrameMetadata
     arrays: tuple[ArrayDescriptor, ...] = ()
+    channel_roles: dict[int, str] = {}
     pixel_scale: PixelScaleMetadata | None = None
     photodiode: PhotodiodeTransitionsData | None = None
 
