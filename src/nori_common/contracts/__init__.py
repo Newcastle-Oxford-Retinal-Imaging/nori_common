@@ -7,6 +7,10 @@ from nori_common.contracts.errors import (
     MetadataNotFound,
     SchemaError,
 )
+from nori_common.contracts.manifest import ArrayDescriptor, Manifest
+from nori_common.contracts.photodiode import PhotodiodeTransitionsData
+from nori_common.contracts.pixel_scale import PixelScaleMetadata
+from nori_common.contracts.provenance import ArtifactProvenance
 from nori_common.contracts.protocols import (
     AcquisitionProvenance,
     AcquisitionTiming,
@@ -31,13 +35,17 @@ from nori_common.contracts.protocols import (
     ScanGeometry,
     Timing,
 )
+from nori_common.contracts.raw import RawAcquisitionMetadata
+from nori_common.contracts.trial import FrameMetadata, TrialMetadata
 from nori_common.contracts.values import Extras, PixelScaleData, ProvenanceData
 
 __all__ = [
     "AcquisitionProvenance",
     "AcquisitionTiming",
+    "ArrayDescriptor",
     "Artifact",
     "ArtifactBase",
+    "ArtifactProvenance",
     "CapabilityNotAvailable",
     "ChannelRoles",
     "CoarseMotion",
@@ -45,23 +53,29 @@ __all__ = [
     "Extras",
     "EyeMotionPerPixel",
     "EyeMotionPerRow",
+    "FrameMetadata",
     "FramePositions",
     "FrameRate",
     "Frames",
     "FrameShape",
+    "Manifest",
     "MetadataExtras",
     "MetadataNotFound",
     "Metrics",
     "MontageMotion",
     "PhotodiodeTransitions",
+    "PhotodiodeTransitionsData",
     "PixelScale",
     "PixelScaleData",
+    "PixelScaleMetadata",
     "Provenance",
     "ProvenanceData",
+    "RawAcquisitionMetadata",
     "RawChannelRoles",
     "RawData",
     "RawScanGeometry",
     "ScanGeometry",
     "SchemaError",
     "Timing",
+    "TrialMetadata",
 ]
