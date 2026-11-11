@@ -1,6 +1,10 @@
-"""Analysis-facing data access protocols, adapters, and capability types."""
+"""Compatibility facade for the former monolithic data module.
 
-from nori_common.data.adapters import (
+New code should import contracts from :mod:`nori_common.contracts` and
+implementations from :mod:`nori_common.adapters`.
+"""
+
+from nori_common.adapters import (
     FitsArrayAdapter,
     FitsCoarseMotionAdapter,
     FitsEyeMotionAdapter,
@@ -20,40 +24,40 @@ from nori_common.data.adapters import (
     read_metrics,
     read_montage_motion,
     read_raw_acquisition,
+    read_trial,
 )
-from nori_common.data.base import ArtifactBase
-from nori_common.data.errors import (
-    CapabilityNotAvailable,
-    DataAccessError,
-    MetadataNotFound,
-    SchemaError,
-)
-from nori_common.data.extras import Extras, PixelScaleData, ProvenanceData
-from nori_common.data.protocols import (
+from nori_common.contracts import (
     AcquisitionProvenance,
     AcquisitionTiming,
     Artifact,
+    ArtifactBase,
+    CapabilityNotAvailable,
     ChannelRoles,
     CoarseMotion,
+    DataAccessError,
+    Extras,
     EyeMotionPerPixel,
     EyeMotionPerRow,
     FramePositions,
-    Frames,
     FrameRate,
+    Frames,
     FrameShape,
     MetadataExtras,
+    MetadataNotFound,
     Metrics,
     MontageMotion,
     PhotodiodeTransitions,
     PixelScale,
+    PixelScaleData,
     Provenance,
+    ProvenanceData,
     RawChannelRoles,
     RawData,
     RawScanGeometry,
     ScanGeometry,
+    SchemaError,
     Timing,
 )
-from nori_common.data.readers import read_trial
 
 __all__ = [
     "AcquisitionProvenance",

@@ -6,10 +6,8 @@ from pathlib import Path
 
 from astropy.io import fits
 
-from nori_common.data.adapters.fits_trial import (
-    FitsTrialAdapter,
-    LegacyFitsTrialAdapter,
-)
+from nori_common.adapters.fits_trial import FitsTrialAdapter
+from nori_common.adapters.legacy_timing import LegacyFitsTrialAdapter
 from nori_common.fits import FitsFile
 from nori_common.fits.schema import EXT_FIT_PARAMS, EXT_LINE_STARTS
 

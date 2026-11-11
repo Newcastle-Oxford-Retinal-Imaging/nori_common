@@ -6,12 +6,11 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
-from astropy.io import fits
 
-from nori_common.data import protocols
-from nori_common.data.base import ArtifactBase
-from nori_common.data.errors import CapabilityNotAvailable, SchemaError
-from nori_common.data.extras import Extras, PixelScaleData, ProvenanceData
+from nori_common.contracts import protocols
+from nori_common.contracts.base import ArtifactBase
+from nori_common.contracts.errors import CapabilityNotAvailable, SchemaError
+from nori_common.contracts.values import Extras, PixelScaleData, ProvenanceData
 from nori_common.exceptions import ExtensionNotFound
 from nori_common.fits import FitsFile
 from nori_common.fits.schema import (
@@ -348,30 +347,3 @@ class FitsTrialAdapter(ArtifactBase):
     @property
     def extras(self) -> Extras:
         return self._extras
-
-
-class LegacyFitsTrialAdapter(FitsTrialAdapter):
-    """Trial adapter for legacy processed files with unnamed timing HDUs.
-
-    The legacy layout stores the primary frames HDU, followed by unnamed
-    ``FIT_PARAMS`` and ``LINE_STARTS`` HDUs.
-    """
-
-    def _timing_arrays_available(self) -> bool:
-        with fits.open(self._path) as hdul:
-            data_hdus = [hdu for hdu in hdul if hdu.size]
-        return len(data_hdus) >= 3
-
-    def _load_timing_arrays(self) -> tuple[np.ndarray, np.ndarray] | None:
-        if self._timing_arrays is not None:
-            return self._timing_arrays
-        with fits.open(self._path) as hdul:
-            data_hdus = [hdu for hdu in hdul if hdu.size]
-            if len(data_hdus) < 3:
-                return None
-            arrays = (
-                np.asarray(data_hdus[1].data),
-                np.asarray(data_hdus[2].data),
-            )
-        self._timing_arrays = arrays
-        return self._timing_arrays

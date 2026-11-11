@@ -13,7 +13,7 @@ from nori_common.data import (
     SchemaError,
     read_raw_acquisition,
 )
-from nori_common.data.adapters.raw import RawAcquisitionData
+from nori_common.adapters import RawAcquisitionData
 
 
 def _data():

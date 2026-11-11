@@ -7,10 +7,10 @@ from typing import Any
 
 import numpy as np
 
-from nori_common.data import protocols
-from nori_common.data.base import ArtifactBase
-from nori_common.data.errors import CapabilityNotAvailable, SchemaError
-from nori_common.data.extras import Extras, PixelScaleData, ProvenanceData
+from nori_common.contracts import protocols
+from nori_common.contracts.base import ArtifactBase
+from nori_common.contracts.errors import CapabilityNotAvailable, SchemaError
+from nori_common.contracts.values import Extras, PixelScaleData, ProvenanceData
 
 
 def _required(metadata: Mapping[str, Any], key: str) -> Any:

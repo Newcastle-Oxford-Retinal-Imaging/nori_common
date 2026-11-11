@@ -6,10 +6,10 @@ from collections.abc import Mapping
 
 import numpy as np
 
-from nori_common.data import protocols
-from nori_common.data.base import ArtifactBase
-from nori_common.data.errors import CapabilityNotAvailable
-from nori_common.data.extras import Extras, PixelScaleData, ProvenanceData
+from nori_common.contracts import protocols
+from nori_common.contracts.base import ArtifactBase
+from nori_common.contracts.errors import CapabilityNotAvailable
+from nori_common.contracts.values import Extras, PixelScaleData, ProvenanceData
 
 
 class InMemoryTrial(ArtifactBase):

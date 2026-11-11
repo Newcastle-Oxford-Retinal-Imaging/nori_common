@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from nori_common.data.errors import CapabilityNotAvailable
+from nori_common.contracts.errors import CapabilityNotAvailable
 
 T = TypeVar("T")
 

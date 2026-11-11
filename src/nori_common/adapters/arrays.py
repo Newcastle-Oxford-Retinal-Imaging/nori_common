@@ -11,8 +11,8 @@ from pathlib import Path
 
 import numpy as np
 
-from nori_common.data import protocols
-from nori_common.data.errors import CapabilityNotAvailable, SchemaError
+from nori_common.contracts import protocols
+from nori_common.contracts.errors import CapabilityNotAvailable, SchemaError
 from nori_common.fits import FitsFile
 
 

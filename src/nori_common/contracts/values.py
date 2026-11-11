@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 
-from nori_common.data.errors import MetadataNotFound
+from nori_common.contracts.errors import MetadataNotFound
 
 
 @dataclass(frozen=True)
