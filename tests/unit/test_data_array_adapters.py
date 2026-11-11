@@ -9,6 +9,7 @@ from nori_common.data import (
     SchemaError,
     read_coarse_motion,
     read_eye_motion,
+    read_eye_motion_per_row,
     read_frame_positions,
     read_metrics,
     read_montage_motion,
@@ -35,6 +36,15 @@ def test_eye_motion_adapter_rejects_wrong_trailing_axis(tmp_path):
 
     with pytest.raises(SchemaError):
         _ = read_eye_motion(path).positions
+
+
+def test_eye_motion_per_row_adapter(tmp_path):
+    data = numpy.arange(2 * 3 * 2, dtype=numpy.float32).reshape(2, 3, 2)
+    path = _write(tmp_path, "eye_motion_row.fits", data)
+
+    adapter = read_eye_motion_per_row(path)
+
+    numpy.testing.assert_array_equal(adapter.positions, data)
 
 
 def test_metrics_adapter(tmp_path):

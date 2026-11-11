@@ -60,6 +60,10 @@ class ScanGeometry(Protocol):
     def non_flyback_rows(self) -> tuple[int, int]:
         """Inclusive (first, last) valid scan rows."""
 
+    @property
+    def scanner_offset_pixels(self) -> tuple[float, float]:
+        """Scanner offset in pixels, ordered (y, x)."""
+
 
 class FrameRate(Protocol):
     """Frame rate associated with a trial."""
@@ -69,12 +73,32 @@ class FrameRate(Protocol):
         """Frame rate in hertz."""
 
 
+class PhotodiodeTransitions(Protocol):
+    """Optional photodiode transition metadata."""
+
+    @property
+    def values(self) -> dict[int, float]:
+        """Photodiode transition values, keyed by transition number."""
+
+    @property
+    def transitions(self) -> dict[int, float]:
+        """Photodiode transition times, keyed by transition number."""
+
+
 class EyeMotionPerPixel(Protocol):
     """Per-pixel eye motion for a trial."""
 
     @property
     def positions(self) -> np.ndarray:
         """Positions, shape (frames, y, x, 2)."""
+
+
+class EyeMotionPerRow(Protocol):
+    """Per-row eye motion for a trial."""
+
+    @property
+    def positions(self) -> np.ndarray:
+        """Positions, shape (frames, rows, 2)."""
 
 
 class Metrics(Protocol):
@@ -188,8 +212,10 @@ CAPABILITY_TYPES: tuple[type, ...] = (
     PixelScale,
     ChannelRoles,
     EyeMotionPerPixel,
+    EyeMotionPerRow,
     Metrics,
     FramePositions,
     CoarseMotion,
     MontageMotion,
+    PhotodiodeTransitions,
 )

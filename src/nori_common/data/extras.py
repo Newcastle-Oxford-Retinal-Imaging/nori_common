@@ -18,6 +18,14 @@ class ProvenanceData:
     parent_ids: tuple[str, ...] = field(default_factory=tuple)
 
 
+@dataclass(frozen=True)
+class PixelScaleData:
+    """Concrete implementation of the PixelScale protocol."""
+
+    pixel_size_arcmin_x: float
+    pixel_size_arcmin_y: float
+
+
 class Extras(Mapping[str, object]):
     """Read-only, namespaced extra metadata mapping."""
 

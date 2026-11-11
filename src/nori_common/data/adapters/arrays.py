@@ -56,6 +56,22 @@ class FitsEyeMotionAdapter(FitsArrayAdapter):
         return self.data
 
 
+class FitsEyeMotionPerRowAdapter(FitsArrayAdapter):
+    """Per-row eye motion, shape (frames, rows, 2)."""
+
+    product = "eye_motion_per_row"
+    expected_ndim = 3
+
+    def _validate(self, data: np.ndarray) -> None:
+        super()._validate(data)
+        if data.shape[-1] != 2:
+            raise SchemaError("positions", self.product)
+
+    @property
+    def positions(self) -> np.ndarray:
+        return self.data
+
+
 class FitsMetricsAdapter(FitsArrayAdapter):
     """Frame metrics, shape (frames, n_metrics) with at least two metrics."""
 
@@ -137,6 +153,11 @@ class FitsMontageMotionAdapter(FitsArrayAdapter):
 def read_eye_motion(path: str | Path) -> FitsEyeMotionAdapter:
     """Open per-pixel eye motion for a trial."""
     return FitsEyeMotionAdapter(path)
+
+
+def read_eye_motion_per_row(path: str | Path) -> FitsEyeMotionPerRowAdapter:
+    """Open per-row eye motion for a trial."""
+    return FitsEyeMotionPerRowAdapter(path)
 
 
 def read_metrics(path: str | Path) -> FitsMetricsAdapter:
