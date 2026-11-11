@@ -20,6 +20,11 @@ from nori_common.data.adapters.fits_trial import (
     LegacyFitsTrialAdapter,
 )
 from nori_common.data.adapters.in_memory import InMemoryTrial
+from nori_common.data.adapters.raw import (
+    RawAcquisitionData,
+    from_metadata,
+    read_raw_acquisition,
+)
 
 __all__ = [
     "FitsArrayAdapter",
@@ -32,10 +37,13 @@ __all__ = [
     "FitsTrialAdapter",
     "InMemoryTrial",
     "LegacyFitsTrialAdapter",
+    "RawAcquisitionData",
+    "from_metadata",
     "read_coarse_motion",
     "read_eye_motion",
     "read_eye_motion_per_row",
     "read_frame_positions",
     "read_metrics",
     "read_montage_motion",
+    "read_raw_acquisition",
 ]

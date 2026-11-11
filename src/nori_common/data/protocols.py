@@ -85,6 +85,88 @@ class PhotodiodeTransitions(Protocol):
         """Photodiode transition times, keyed by transition number."""
 
 
+class RawData(Protocol):
+    """Raw acquisition sample data."""
+
+    @property
+    def data(self) -> np.ndarray:
+        """Raw data, shape (channels, samples)."""
+
+
+class RawChannelRoles(Protocol):
+    """Channel-row roles and indices for a raw acquisition."""
+
+    @property
+    def channel_roles(self) -> dict[int, str]:
+        """Mapping from row index to analysis role."""
+
+    @property
+    def slow_channel_index(self) -> int: ...
+
+    @property
+    def fast_channel_index(self) -> int: ...
+
+    @property
+    def confocal_channel_index(self) -> int: ...
+
+    @property
+    def photodiode_channel_index(self) -> int | None: ...
+
+
+class RawScanGeometry(Protocol):
+    """Raster scan geometry from acquisition metadata."""
+
+    @property
+    def n_pixels_horizontal_float(self) -> float: ...
+
+    @property
+    def n_pixels_vertical(self) -> int: ...
+
+    @property
+    def n_lines_flyback(self) -> int | None: ...
+
+    @property
+    def galvo_direction(self) -> str | None: ...
+
+
+class AcquisitionTiming(Protocol):
+    """Sample timing and downsampling from acquisition metadata."""
+
+    @property
+    def sample_interval_s(self) -> float: ...
+
+    @property
+    def down_sample_ratio(self) -> int: ...
+
+    @property
+    def frame_rate_hz(self) -> float: ...
+
+    @property
+    def n_samples_total(self) -> int: ...
+
+
+class AcquisitionProvenance(Protocol):
+    """Acquisition provenance and metadata version."""
+
+    @property
+    def metadata_version(self) -> int | None: ...
+
+    @property
+    def system_id(self) -> str | None: ...
+
+    @property
+    def profile_id(self) -> str | None: ...
+
+    @property
+    def wiring_id(self) -> str | None: ...
+
+    @property
+    def source_type(self) -> str: ...
+
+    @property
+    def creator(self) -> str: ...
+
+
 class EyeMotionPerPixel(Protocol):
     """Per-pixel eye motion for a trial."""
 
@@ -218,4 +300,9 @@ CAPABILITY_TYPES: tuple[type, ...] = (
     CoarseMotion,
     MontageMotion,
     PhotodiodeTransitions,
+    RawData,
+    RawChannelRoles,
+    RawScanGeometry,
+    AcquisitionTiming,
+    AcquisitionProvenance,
 )

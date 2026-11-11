@@ -11,12 +11,15 @@ from nori_common.data.adapters import (
     FitsTrialAdapter,
     InMemoryTrial,
     LegacyFitsTrialAdapter,
+    RawAcquisitionData,
+    from_metadata,
     read_coarse_motion,
     read_eye_motion,
     read_eye_motion_per_row,
     read_frame_positions,
     read_metrics,
     read_montage_motion,
+    read_raw_acquisition,
 )
 from nori_common.data.base import ArtifactBase
 from nori_common.data.errors import (
@@ -27,6 +30,8 @@ from nori_common.data.errors import (
 )
 from nori_common.data.extras import Extras, PixelScaleData, ProvenanceData
 from nori_common.data.protocols import (
+    AcquisitionProvenance,
+    AcquisitionTiming,
     Artifact,
     ChannelRoles,
     CoarseMotion,
@@ -42,12 +47,17 @@ from nori_common.data.protocols import (
     PhotodiodeTransitions,
     PixelScale,
     Provenance,
+    RawChannelRoles,
+    RawData,
+    RawScanGeometry,
     ScanGeometry,
     Timing,
 )
 from nori_common.data.readers import read_trial
 
 __all__ = [
+    "AcquisitionProvenance",
+    "AcquisitionTiming",
     "Artifact",
     "ArtifactBase",
     "CapabilityNotAvailable",
@@ -80,14 +90,20 @@ __all__ = [
     "PixelScaleData",
     "Provenance",
     "ProvenanceData",
+    "RawAcquisitionData",
+    "RawChannelRoles",
+    "RawData",
+    "RawScanGeometry",
     "ScanGeometry",
     "SchemaError",
     "Timing",
+    "from_metadata",
     "read_coarse_motion",
     "read_eye_motion",
     "read_eye_motion_per_row",
     "read_frame_positions",
     "read_metrics",
     "read_montage_motion",
+    "read_raw_acquisition",
     "read_trial",
 ]
