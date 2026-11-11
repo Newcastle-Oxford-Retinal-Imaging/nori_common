@@ -47,6 +47,7 @@ class InMemoryTrial(ArtifactBase):
         capabilities: set[type] = {
             protocols.Provenance,
             protocols.Frames,
+            protocols.FrameShape,
             protocols.ScanGeometry,
         }
         if self._frame_rate_hz is not None:
@@ -62,6 +63,14 @@ class InMemoryTrial(ArtifactBase):
     @property
     def frames(self) -> np.ndarray:
         return self._frames
+
+    @property
+    def n_frames(self) -> int:
+        return int(self._frames.shape[1])
+
+    @property
+    def frame_shape(self) -> tuple[int, int]:
+        return int(self._frames.shape[2]), int(self._frames.shape[3])
 
     @property
     def non_flyback_rows(self) -> tuple[int, int]:

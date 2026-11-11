@@ -8,6 +8,7 @@ from nori_common.data import (
     Extras,
     FrameRate,
     Frames,
+    FrameShape,
     InMemoryTrial,
     MetadataNotFound,
     PixelScale,
@@ -41,11 +42,12 @@ def test_in_memory_provides_required_capabilities():
     trial = _trial()
 
     assert trial.supports(Frames)
+    assert trial.supports(FrameShape)
     assert trial.supports(ScanGeometry)
     assert trial.supports(FrameRate)
     assert trial.supports(Provenance)
     assert trial.capabilities == frozenset(
-        {"Frames", "ScanGeometry", "FrameRate", "Provenance"}
+        {"Frames", "FrameShape", "ScanGeometry", "FrameRate", "Provenance"}
     )
 
 
@@ -64,6 +66,14 @@ def test_frames_and_geometry_values():
     assert trial.frames.shape == (1, 2, 5, 4, 2)
     assert trial.non_flyback_rows == (1, 3)
     assert trial.frame_rate_hz == 30.0
+
+
+def test_frame_shape_capability():
+    trial = _trial()
+
+    assert trial.require(FrameShape) is trial
+    assert trial.n_frames == 2
+    assert trial.frame_shape == (5, 4)
 
 
 def test_optional_capability_can_be_absent():

@@ -23,6 +23,9 @@ from nori_common.data.errors import CapabilityNotAvailable, SchemaError
 from nori_common.data.extras import Extras, ProvenanceData
 from nori_common.fits import FitsFile
 from nori_common.fits.schema import (
+    CARD_N_FRAMES,
+    CARD_N_PIXELS_HORIZONTAL_INT,
+    CARD_N_PIXELS_VERTICAL,
     CARD_NON_FLYBACK_END,
     CARD_NON_FLYBACK_START,
 )
@@ -54,10 +57,12 @@ _FRAME_RATE_CARDS = (
 _KNOWN_CARDS = {
     CARD_NON_FLYBACK_START.casefold(),
     CARD_NON_FLYBACK_END.casefold(),
+    CARD_N_FRAMES.casefold(),
+    CARD_N_PIXELS_VERTICAL.casefold(),
+    CARD_N_PIXELS_HORIZONTAL_INT.casefold(),
     "source_type",
     "creator",
     "creator_version",
-    "aoslo_frame_rate",
     "aoslo_frame_rate",
     "framerate",
     "frame_rate",
@@ -103,6 +108,16 @@ class FitsTrialAdapter(ArtifactBase):
                     self._frame_rate_hz = float(value)
                     break
 
+        self._n_frames = _lookup(self._header, CARD_N_FRAMES)
+        n_vertical = _lookup(self._header, CARD_N_PIXELS_VERTICAL)
+        n_horizontal_int = _lookup(self._header, CARD_N_PIXELS_HORIZONTAL_INT)
+        self._frame_shape: tuple[int, int] | None = None
+        if n_vertical is not None and n_horizontal_int is not None:
+            self._frame_shape = (
+                int(n_vertical),
+                int(n_horizontal_int) // 2,
+            )
+
     def _build_extras(self) -> dict[str, object]:
         structural = {card.casefold() for card in _STRUCTURAL_CARDS}
         extras: dict[str, object] = {}
@@ -119,6 +134,8 @@ class FitsTrialAdapter(ArtifactBase):
             protocols.Frames,
             protocols.ScanGeometry,
         }
+        if self._frame_shape is not None and self._n_frames is not None:
+            capabilities.add(protocols.FrameShape)
         if self._frame_rate_hz is not None:
             capabilities.add(protocols.FrameRate)
         return frozenset(capabilities)
@@ -136,6 +153,18 @@ class FitsTrialAdapter(ArtifactBase):
     @property
     def non_flyback_rows(self) -> tuple[int, int]:
         return self._non_flyback_rows
+
+    @property
+    def n_frames(self) -> int:
+        if self._n_frames is None:
+            raise CapabilityNotAvailable(self, protocols.FrameShape)
+        return int(self._n_frames)
+
+    @property
+    def frame_shape(self) -> tuple[int, int]:
+        if self._frame_shape is None:
+            raise CapabilityNotAvailable(self, protocols.FrameShape)
+        return self._frame_shape
 
     @property
     def frame_rate_hz(self) -> float:

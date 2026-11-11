@@ -41,6 +41,18 @@ class Frames(Protocol):
         """Frame data, shape (channels, frames, y, x, direction)."""
 
 
+class FrameShape(Protocol):
+    """Frame geometry without loading pixel data."""
+
+    @property
+    def n_frames(self) -> int:
+        """Number of frames."""
+
+    @property
+    def frame_shape(self) -> tuple[int, int]:
+        """(y, x) frame shape."""
+
+
 class ScanGeometry(Protocol):
     """Raster scan geometry for a trial."""
 
@@ -55,6 +67,58 @@ class FrameRate(Protocol):
     @property
     def frame_rate_hz(self) -> float:
         """Frame rate in hertz."""
+
+
+class EyeMotionPerPixel(Protocol):
+    """Per-pixel eye motion for a trial."""
+
+    @property
+    def positions(self) -> np.ndarray:
+        """Positions, shape (frames, y, x, 2)."""
+
+
+class Metrics(Protocol):
+    """Frame-quality metrics for a trial."""
+
+    @property
+    def values(self) -> np.ndarray:
+        """Metric matrix, shape (frames, n_metrics)."""
+
+    @property
+    def ncc(self) -> np.ndarray:
+        """Normalised cross-correlation per frame."""
+
+    @property
+    def blink(self) -> np.ndarray:
+        """Blink metric per frame."""
+
+    @property
+    def std_dev(self) -> np.ndarray:
+        """Standard deviation per frame."""
+
+
+class FramePositions(Protocol):
+    """Frame-position bounds for per-pixel eye motion."""
+
+    @property
+    def positions(self) -> np.ndarray:
+        """Frame positions, shape (frames, 8)."""
+
+
+class CoarseMotion(Protocol):
+    """Coarse per-frame motion."""
+
+    @property
+    def positions(self) -> np.ndarray:
+        """Coarse positions, shape (frames, 2)."""
+
+
+class MontageMotion(Protocol):
+    """Montage motion field."""
+
+    @property
+    def motion(self) -> np.ndarray:
+        """Montage motion, shape (y, x, 2)."""
 
 
 class Timing(Protocol):
@@ -117,9 +181,15 @@ class Artifact(Protocol):
 CAPABILITY_TYPES: tuple[type, ...] = (
     Provenance,
     Frames,
+    FrameShape,
     ScanGeometry,
     FrameRate,
     Timing,
     PixelScale,
     ChannelRoles,
+    EyeMotionPerPixel,
+    Metrics,
+    FramePositions,
+    CoarseMotion,
+    MontageMotion,
 )

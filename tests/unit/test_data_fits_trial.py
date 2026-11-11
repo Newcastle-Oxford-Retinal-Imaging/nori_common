@@ -11,6 +11,7 @@ from nori_common.data import (
     FitsTrialAdapter,
     FrameRate,
     Frames,
+    FrameShape,
     Provenance,
     ScanGeometry,
     SchemaError,
@@ -25,6 +26,9 @@ def _header():
     header = fits.Header()
     header["Non_flyback_start"] = 1
     header["Non_flyback_end"] = 3
+    header["n_frames"] = 2
+    header["n_pixels_vertical"] = 5
+    header["n_pixels_horizontal_int"] = 8
     header["SOURCE_TYPE"] = "measured"
     header["CREATOR"] = "unit-test"
     header["CREATOR_VERSION"] = "1.0"
@@ -66,11 +70,14 @@ def test_fits_trial_contract(tmp_path, writer):
     trial = FitsTrialAdapter(path, frame_rate=123.0)
 
     assert trial.supports(Frames)
+    assert trial.supports(FrameShape)
     assert trial.supports(ScanGeometry)
     assert trial.supports(FrameRate)
     assert trial.supports(Provenance)
 
     numpy.testing.assert_array_equal(trial.require(Frames).frames, _frames())
+    assert trial.n_frames == 2
+    assert trial.frame_shape == (5, 4)
     assert trial.require(ScanGeometry).non_flyback_rows == (1, 3)
     assert trial.require(FrameRate).frame_rate_hz == 123.0
     assert trial.provenance.source_type == "measured"
