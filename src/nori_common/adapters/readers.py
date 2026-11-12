@@ -8,8 +8,11 @@ from astropy.io import fits
 
 from nori_common.adapters.fits_trial import FitsTrialAdapter
 from nori_common.adapters.legacy_timing import LegacyFitsTrialAdapter
+from nori_common.contracts.errors import SchemaError
+from nori_common.exceptions import ExtensionNotFound
 from nori_common.fits import FitsFile
 from nori_common.fits.schema import EXT_FIT_PARAMS, EXT_LINE_STARTS
+from nori_common.manifest import read_manifest
 
 
 def _has_named_timing(path: Path) -> bool:
@@ -48,7 +51,15 @@ def read_trial(
     """
     trial_path = Path(path)
     adapter: type[FitsTrialAdapter]
-    if _has_named_timing(trial_path):
+    try:
+        manifest = read_manifest(trial_path)
+    except ExtensionNotFound:
+        manifest = None
+    if manifest is not None:
+        if manifest.schema_name != "trial":
+            raise SchemaError("schema_name", "trial")
+        adapter = FitsTrialAdapter
+    elif _has_named_timing(trial_path):
         adapter = FitsTrialAdapter
     elif _has_legacy_timing(trial_path):
         adapter = LegacyFitsTrialAdapter

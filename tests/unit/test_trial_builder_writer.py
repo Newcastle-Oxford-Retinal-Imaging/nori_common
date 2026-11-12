@@ -53,6 +53,17 @@ def test_builder_derives_frame_metadata():
     assert frame.scanner_offset_x == -2.5
     assert frame.scanner_offset_y == 1.5
     assert payload.metadata.channel_roles == {0: "confocal", 1: "photodiode"}
+    primary = payload.metadata.arrays[0]
+    assert primary.shape == (2, 3, 5, 4, 2)
+    assert [axis.name for axis in primary.axes] == [
+        "channel",
+        "frame",
+        "y",
+        "x",
+        "direction",
+    ]
+    assert primary.axes[0].labels == ("confocal", "photodiode")
+    assert primary.axes[4].labels == ("forward", "reverse")
 
 
 def test_builder_rejects_short_line_starts():
@@ -65,6 +76,7 @@ def test_builder_rejects_short_line_starts():
             time_interval=1.0e-07,
             scanner_offset=(0.0, 0.0),
             non_flyback_rows=(0, 4),
+            channel_roles={0: "confocal"},
         )
 
 
@@ -85,6 +97,9 @@ def test_writer_roundtrip(tmp_path):
     assert read_sidecar(sidecar_path) == manifest
 
     trial = read_trial(fits_path)
+    assert trial.manifest is not None
+    assert trial.manifest.arrays[0].shape == (2, 3, 5, 4, 2)
+    assert trial.manifest.arrays[0].axes[4].labels == ("forward", "reverse")
     assert trial.require(FrameShape).n_frames == 3
     assert trial.require(FrameShape).frame_shape == (5, 4)
     assert trial.require(Timing).fit_parameters.shape == (2, 5)

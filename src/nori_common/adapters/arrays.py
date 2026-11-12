@@ -11,9 +11,11 @@ from pathlib import Path
 
 import numpy as np
 
-from nori_common.contracts import protocols
+from nori_common.contracts import Manifest, protocols
 from nori_common.contracts.errors import CapabilityNotAvailable, SchemaError
+from nori_common.exceptions import ExtensionNotFound
 from nori_common.fits import FitsFile
+from nori_common.manifest import read_manifest
 
 
 class FitsArrayAdapter:
@@ -25,10 +27,36 @@ class FitsArrayAdapter:
     def __init__(self, path: str | Path) -> None:
         self._path = Path(path)
         self._data: np.ndarray | None = None
+        self._manifest: Manifest | None = None
+        try:
+            manifest = read_manifest(self._path)
+        except ExtensionNotFound:
+            pass
+        else:
+            if manifest.schema_name != self.product:
+                raise SchemaError("schema_name", self.product)
+            if len(manifest.arrays) != 1:
+                raise SchemaError("arrays", self.product)
+            self._manifest = manifest
+
+    @property
+    def manifest(self) -> Manifest | None:
+        """Manifest read from the FITS file, when present."""
+        return self._manifest
 
     def _validate(self, data: np.ndarray) -> None:
         if self.expected_ndim is not None and data.ndim != self.expected_ndim:
             raise SchemaError("array", self.product)
+        if self._manifest is None:
+            return
+        descriptor = self._manifest.arrays[0]
+        if tuple(int(size) for size in data.shape) != descriptor.shape:
+            raise SchemaError("shape", self.product)
+        if len(descriptor.axes) != data.ndim:
+            raise SchemaError("axes", self.product)
+        for axis, size in zip(descriptor.axes, data.shape, strict=True):
+            if axis.size != int(size):
+                raise SchemaError(axis.name, self.product)
 
     @property
     def data(self) -> np.ndarray:

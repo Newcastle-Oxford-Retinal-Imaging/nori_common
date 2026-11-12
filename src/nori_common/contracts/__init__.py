@@ -7,7 +7,12 @@ from nori_common.contracts.errors import (
     MetadataNotFound,
     SchemaError,
 )
-from nori_common.contracts.manifest import ArrayDescriptor, Manifest
+from nori_common.contracts.manifest import (
+    ArrayDescriptor,
+    AxisDescriptor,
+    CoordinateSpec,
+    Manifest,
+)
 from nori_common.contracts.photodiode import PhotodiodeTransitionsData
 from nori_common.contracts.pixel_scale import PixelScaleMetadata
 from nori_common.contracts.provenance import ArtifactProvenance
@@ -46,6 +51,8 @@ __all__ = [
     "Artifact",
     "ArtifactBase",
     "ArtifactProvenance",
+    "AxisDescriptor",
+    "CoordinateSpec",
     "CapabilityNotAvailable",
     "ChannelRoles",
     "CoarseMotion",

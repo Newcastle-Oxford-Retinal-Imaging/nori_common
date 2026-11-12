@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from nori_common.builders.axes import build_axis_descriptors
 from nori_common.contracts import (
     ArrayDescriptor,
     ArtifactProvenance,
@@ -75,25 +76,46 @@ def build_trial_payload(
         Non_flyback_end=non_flyback_rows[1],
     )
 
+    channel_roles_dict = dict(channel_roles or {})
+    frames_axes = build_axis_descriptors(
+        frames,
+        schema_name="trial",
+        role="frames",
+        metadata={"channel_roles": channel_roles_dict},
+    )
+    fit_parameter_axes = build_axis_descriptors(
+        fit_parameters,
+        schema_name="trial",
+        role="desinusoid_parameters",
+    )
+    line_start_axes = build_axis_descriptors(
+        line_starts,
+        schema_name="trial",
+        role="line_start_samples",
+    )
+
     arrays = (
         ArrayDescriptor(
             name="PRIMARY",
             role="frames",
             dtype=str(frames.dtype),
-            axes=("channel", "frame", "y", "x", "direction"),
+            shape=tuple(int(size) for size in frames.shape),
+            axes=frames_axes,
             unit="a.u.",
         ),
         ArrayDescriptor(
             name="FIT_PARAMS",
             role="desinusoid_parameters",
             dtype=str(fit_parameters.dtype),
-            axes=("axis", "coefficient"),
+            shape=tuple(int(size) for size in fit_parameters.shape),
+            axes=fit_parameter_axes,
         ),
         ArrayDescriptor(
             name="LINE_STARTS",
             role="line_start_samples",
             dtype=str(line_starts.dtype),
-            axes=("line",),
+            shape=tuple(int(size) for size in line_starts.shape),
+            axes=line_start_axes,
             unit="sample",
         ),
     )
@@ -103,7 +125,7 @@ def build_trial_payload(
         provenance=provenance or ArtifactProvenance(),
         frame=frame_metadata,
         arrays=arrays,
-        channel_roles=dict(channel_roles or {}),
+        channel_roles=channel_roles_dict,
         pixel_scale=pixel_scale,
         photodiode=photodiode,
     )

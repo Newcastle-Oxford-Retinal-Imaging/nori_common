@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from nori_common.builders.axes import array_spec, build_axis_descriptors
 from nori_common.contracts import (
     ArrayDescriptor,
     ArtifactProvenance,
@@ -44,6 +45,16 @@ def build_array_payload(
     if data.ndim == 0:
         raise SchemaError("data", schema_name)
 
+    metadata_dict = dict(metadata or {})
+    axis_descriptors = build_axis_descriptors(
+        data,
+        schema_name=schema_name,
+        role=role,
+        metadata=metadata_dict,
+        axes_names=axes,
+    )
+    spec = array_spec(schema_name, role)
+
     manifest = Manifest(
         schema_name=schema_name,
         schema_version=schema_version,
@@ -52,11 +63,12 @@ def build_array_payload(
                 name=array_name,
                 role=role,
                 dtype=str(data.dtype),
-                axes=tuple(axes),
-                unit=None,
+                shape=tuple(int(size) for size in data.shape),
+                axes=axis_descriptors,
+                unit=spec.unit if spec is not None else None,
             ),
         ),
-        metadata=dict(metadata or {}),
+        metadata=metadata_dict,
         capabilities=dict(capabilities or {}),
         provenance=provenance or ArtifactProvenance(),
         pixel_scale=pixel_scale,

@@ -20,3 +20,12 @@ uv run pytest
 uv run ruff check src/ tests/
 uv run ruff format --check src/ tests/
 ```
+
+## Inspect schema artifacts
+
+```bash
+uv run nori-schema-inspect path/to/file.fits
+uv run nori-schema-inspect output/ --summary
+```
+
+The inspector supports current schema-aware files, legacy processed trials, raw acquisition FITS + YAML and unknown FITS files. See [docs/inspection.md](docs/inspection.md).

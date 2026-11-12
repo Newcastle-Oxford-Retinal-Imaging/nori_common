@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from nori_common.contracts import (
     ArrayDescriptor,
     ArtifactProvenance,
+    AxisDescriptor,
     FrameMetadata,
     Manifest,
     PhotodiodeTransitionsData,
@@ -13,6 +14,20 @@ from nori_common.contracts import (
     RawAcquisitionMetadata,
     TrialMetadata,
 )
+
+
+def _frames_descriptor(shape=(1, 2, 5, 4, 2)):
+    names = ("channel", "frame", "y", "x", "direction")
+    labels = (("confocal",), None, None, None, ("forward", "reverse"))
+    return ArrayDescriptor(
+        name="PRIMARY",
+        role="frames",
+        shape=shape,
+        axes=tuple(
+            AxisDescriptor(name=name, size=size, labels=label)
+            for name, size, label in zip(names, shape, labels, strict=True)
+        ),
+    )
 
 
 def _frame_metadata(**overrides):
@@ -54,7 +69,7 @@ def test_trial_metadata_preserves_extra_fields():
             creator="ERICA",
             custom_field="kept",
         ),
-        arrays=(ArrayDescriptor(name="PRIMARY", role="frames"),),
+        arrays=(_frames_descriptor(),),
         pixel_scale=PixelScaleMetadata(
             pixel_size_arcmin_x=0.1,
             pixel_size_arcmin_y=0.2,
@@ -101,10 +116,30 @@ def test_raw_acquisition_metadata_rejects_duplicate_channels():
 def test_manifest_contract():
     manifest = Manifest(
         schema_name="trial",
-        arrays=(ArrayDescriptor(name="PRIMARY", role="frames"),),
+        arrays=(_frames_descriptor(),),
         metadata={"n_frames": 2},
         provenance=ArtifactProvenance(creator="nori"),
     )
 
     assert manifest.schema_name == "trial"
     assert manifest.arrays[0].role == "frames"
+    assert manifest.arrays[0].shape == (1, 2, 5, 4, 2)
+    assert manifest.arrays[0].axes[0].labels == ("confocal",)
+
+
+def test_axis_descriptor_rejects_label_count_mismatch():
+    with pytest.raises(ValidationError):
+        AxisDescriptor(name="channel", size=2, labels=("confocal",))
+
+
+def test_array_descriptor_rejects_shape_axis_mismatch():
+    with pytest.raises(ValidationError):
+        ArrayDescriptor(
+            name="PRIMARY",
+            role="frames",
+            shape=(2, 3),
+            axes=(
+                AxisDescriptor(name="frame", size=3),
+                AxisDescriptor(name="row", size=2),
+            ),
+        )

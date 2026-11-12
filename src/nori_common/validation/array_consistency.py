@@ -5,8 +5,23 @@ from __future__ import annotations
 import numpy as np
 
 from nori_common.contracts.errors import SchemaError
+from nori_common.contracts.manifest import ArrayDescriptor
 from nori_common.contracts.raw import RawAcquisitionMetadata
 from nori_common.contracts.trial import FrameMetadata, TrialMetadata
+
+
+def validate_array_descriptor(
+    descriptor: ArrayDescriptor,
+    data: np.ndarray,
+) -> None:
+    """Validate one array descriptor against its data."""
+    if tuple(int(size) for size in data.shape) != descriptor.shape:
+        raise SchemaError("shape", descriptor.name)
+    if len(descriptor.axes) != data.ndim:
+        raise SchemaError("axes", descriptor.name)
+    for axis, size in zip(descriptor.axes, data.shape, strict=True):
+        if axis.size != int(size):
+            raise SchemaError(axis.name, descriptor.name)
 
 
 def validate_frame_arrays(metadata: FrameMetadata, frames: np.ndarray) -> None:
@@ -44,6 +59,17 @@ def validate_trial_arrays(
     )
     if line_starts.ndim != 1 or line_starts.shape[0] < required_line_starts:
         raise SchemaError("LINE_STARTS", "trial")
+
+    if metadata.arrays:
+        descriptors = {descriptor.name: descriptor for descriptor in metadata.arrays}
+        for name, data in (
+            ("PRIMARY", frames),
+            ("FIT_PARAMS", fit_parameters),
+            ("LINE_STARTS", line_starts),
+        ):
+            descriptor = descriptors.get(name)
+            if descriptor is not None:
+                validate_array_descriptor(descriptor, data)
 
 
 def validate_raw_data(metadata: RawAcquisitionMetadata, data: np.ndarray) -> None:

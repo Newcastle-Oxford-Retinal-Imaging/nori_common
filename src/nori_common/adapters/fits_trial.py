@@ -7,12 +7,13 @@ from pathlib import Path
 
 import numpy as np
 
-from nori_common.contracts import protocols
+from nori_common.contracts import Manifest, protocols
 from nori_common.contracts.base import ArtifactBase
 from nori_common.contracts.errors import CapabilityNotAvailable, SchemaError
 from nori_common.contracts.values import Extras, PixelScaleData, ProvenanceData
 from nori_common.exceptions import ExtensionNotFound
 from nori_common.fits import FitsFile
+from nori_common.manifest import read_manifest
 from nori_common.fits.schema import (
     CARD_N_FRAMES,
     CARD_N_PIXELS_HORIZONTAL_INT,
@@ -108,6 +109,15 @@ class FitsTrialAdapter(ArtifactBase):
         self._path = Path(path)
         with FitsFile.open(self._path) as fits_file:
             self._header: dict[str, object] = fits_file.header()
+        self._manifest: Manifest | None = None
+        try:
+            manifest = read_manifest(self._path)
+        except ExtensionNotFound:
+            pass
+        else:
+            if manifest.schema_name != "trial":
+                raise SchemaError("schema_name", "trial")
+            self._manifest = manifest
         self._frames: np.ndarray | None = None
         self._timing_arrays: tuple[np.ndarray, np.ndarray] | None = None
         self._extras = Extras(self._build_extras())
@@ -166,6 +176,23 @@ class FitsTrialAdapter(ArtifactBase):
 
         self._pd_values, self._pd_transitions = self._read_photodiode()
 
+    @property
+    def manifest(self) -> Manifest | None:
+        """Manifest read from the FITS file, when present."""
+        return self._manifest
+
+    def _validate_manifest_array(self, name: str, data: np.ndarray) -> None:
+        if self._manifest is None:
+            return
+        descriptor = next(
+            (array for array in self._manifest.arrays if array.name == name),
+            None,
+        )
+        if descriptor is None:
+            raise SchemaError(name, "trial")
+        if tuple(int(size) for size in data.shape) != descriptor.shape:
+            raise SchemaError("shape", name)
+
     def _timing_arrays_available(self) -> bool:
         with FitsFile.open(self._path) as fits_file:
             names = {name.upper() for name in fits_file.extensions()}
@@ -180,6 +207,8 @@ class FitsTrialAdapter(ArtifactBase):
                 line_starts = np.asarray(fits_file.array(EXT_LINE_STARTS))
             except ExtensionNotFound:
                 return None
+        self._validate_manifest_array("FIT_PARAMS", fit_parameters)
+        self._validate_manifest_array("LINE_STARTS", line_starts)
         self._timing_arrays = (fit_parameters, line_starts)
         return self._timing_arrays
 
@@ -250,6 +279,7 @@ class FitsTrialAdapter(ArtifactBase):
                 frames = np.asarray(fits_file.array())
             if frames.ndim != 5:
                 raise SchemaError("frames", "trial")
+            self._validate_manifest_array("PRIMARY", frames)
             self._frames = frames
         return self._frames
 

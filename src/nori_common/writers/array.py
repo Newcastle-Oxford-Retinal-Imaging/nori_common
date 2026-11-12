@@ -13,6 +13,7 @@ from nori_common.manifest import (
     manifest_extension,
     write_sidecar,
 )
+from nori_common.validation import validate_array_descriptor
 
 
 def _set_header_card(header: fits.Header, key: str, value: object) -> None:
@@ -30,6 +31,10 @@ def write_array_artifact(
     sidecar_path: str | Path | None = None,
 ) -> None:
     """Write a single-array artifact with manifest, markers, and sidecar."""
+    if len(payload.manifest.arrays) != 1:
+        raise ValueError("single-array artifact must have one array descriptor")
+    validate_array_descriptor(payload.manifest.arrays[0], payload.data)
+
     header = fits.Header()
     for key, value in payload.header.items():
         _set_header_card(header, str(key), value)

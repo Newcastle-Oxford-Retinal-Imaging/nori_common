@@ -6,6 +6,7 @@ from astropy.io import fits
 from nori_common.contracts import (
     ArrayDescriptor,
     ArtifactProvenance,
+    AxisDescriptor,
     Manifest,
     PixelScaleMetadata,
 )
@@ -25,11 +26,28 @@ from nori_common.manifest import (
 )
 
 
+def _frames_descriptor():
+    shape = (1, 2, 3, 4, 2)
+    axes = (
+        AxisDescriptor(name="channel", size=1, labels=("confocal",)),
+        AxisDescriptor(name="frame", size=2),
+        AxisDescriptor(name="y", size=3),
+        AxisDescriptor(name="x", size=4),
+        AxisDescriptor(name="direction", size=2, labels=("forward", "reverse")),
+    )
+    return ArrayDescriptor(
+        name="PRIMARY",
+        role="frames",
+        shape=shape,
+        axes=axes,
+    )
+
+
 def _manifest():
     return Manifest(
         schema_name="trial",
         schema_version="1.0",
-        arrays=(ArrayDescriptor(name="PRIMARY", role="frames"),),
+        arrays=(_frames_descriptor(),),
         metadata={"n_frames": 2},
         provenance=ArtifactProvenance(
             source_type="simulated",
